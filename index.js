@@ -14,6 +14,7 @@ const {DATABASE_URL, PORT, CLIENT_ORIGIN} = require('./config');
 
 const app = express();
 
+const { router: questionsRouter} = require('./questions');
 const { router: userRouter } = require('./users');
 const { router: authRouter, basicStrategy, jwtStrategy } = require('./auth');
 const passport = require('passport');
@@ -47,6 +48,7 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html');
 });
 
+app.use('api/questions', questionsRouter);
 app.use('api/users', userRouter);
 app.use('api/auth', authRouter);
 app.use('*', (req, res) => {
