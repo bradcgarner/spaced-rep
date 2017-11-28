@@ -20,7 +20,9 @@ UserSchema.methods.apiRepr = function () {
     firstName: this.firstName,
     lastName: this.lastName,
     username: this.username,
-    id: this._id
+    id: this._id,
+    questionHead: this.questionHead,
+    questions: this.questions
   };
 };
 
