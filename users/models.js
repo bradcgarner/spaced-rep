@@ -10,7 +10,9 @@ const UserSchema = mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
+  questionHead: {type: Number},
+  questions: {type: Array}
 });
 
 UserSchema.methods.apiRepr = function () {
