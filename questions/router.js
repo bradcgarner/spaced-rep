@@ -15,6 +15,28 @@ router.get('/', (req, res) => {
       res.status(200).json(questions);
     })
     .catch(error => {
-      res.status(500).json({message: `Something went wrong... ${error}`});
+      res.status(500).json({ message: `Something went wrong... ${error}` });
     });
 });
+
+router.post('/', (req, res) => {
+
+  const newQuestion = {
+    brit: req.body.brit,
+    us: req.body.us,
+    score: req.body.score,
+    nextIndex: req.body.nextIndex
+  };
+
+  Questions
+    .create(newQuestion)
+    .then(() => {
+      res.status(201).json();
+    })
+    .catch(error => {
+      res.status(500).json({ message: `Something went wrong... ${error}` });
+    });
+});
+
+
+module.exports = { router };
