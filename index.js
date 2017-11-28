@@ -48,9 +48,9 @@ app.get('/', (req, res) => {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-app.use('api/questions', questionsRouter);
-app.use('api/users', userRouter);
-app.use('api/auth', authRouter);
+app.use('/api/questions', questionsRouter);
+app.use('/api/users', userRouter);
+app.use('/api/auth', authRouter);
 app.use('*', (req, res) => {
   return res.status(404).json({ message: 'Not Found' });
 });
