@@ -161,7 +161,7 @@ router.post('/', jsonParser, (req, res) => {
 });
 
 //  post to a user's profile with updated questions information
-router.put('/:id/questions', (req, res) => {  
+router.put('/:id/questions', jsonParser, jwtAuth, (req, res) => {  
   console.log('updated questions information');
   const updateUser = req.body;
   console.log(req.body, 'request body');

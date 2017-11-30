@@ -1178,7 +1178,7 @@ const populateQuestions = () => {
       const unsortedQuestions = [];  
       let theQuestion; 
       for (let i = 0; i<batchSize ; i++ > 0){
-        for ( let j = i; j<questions.length; j += batchSize){
+        for ( let j = i; j<100; j += batchSize){
           theQuestion = questions[j];
           theQuestion.nextIndex = (unsortedQuestions.length + 1);
           unsortedQuestions.push(theQuestion);
