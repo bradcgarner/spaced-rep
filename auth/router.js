@@ -25,8 +25,10 @@ router.post('/login', basicAuth, (req, res) => {
   const foundUser = req.user.apiRepr();
   // console.log('foundUser',foundUser);  
   foundUser.authToken = authToken;
+  console.log(' logging in');
   // console.log('foundUser with autho', foundUser);
   res.json(foundUser);
+  
 });
 
 router.post('/refresh', jwtAuth, (req, res) => {

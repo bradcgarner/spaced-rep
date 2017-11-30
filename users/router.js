@@ -161,7 +161,7 @@ router.post('/', jsonParser, (req, res) => {
 });
 
 //  post to a user's profile with updated questions information
-router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {  
+router.put('/:id/questions', (req, res) => {  
   console.log('updated questions information');
   const updateUser = req.body;
   console.log(req.body, 'request body');
@@ -178,7 +178,7 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
 });
 
 // update a user profile
-router.put('/:id', jsonParser, jwtAuth, (req, res) => {
+router.put('/blah/:id', jsonParser, jwtAuth, (req, res) => {
   console.log('update user profile');
   const user = validateUserFields(req.body, 'existingUser');
   let userValid;

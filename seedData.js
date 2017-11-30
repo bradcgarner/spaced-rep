@@ -1196,4 +1196,4 @@ const populateQuestions = () => {
 };
 
 // UNCOMMENT TO USE; COMMENTED FOR SAFEGUARD!
-// populateQuestions();
+populateQuestions();
