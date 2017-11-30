@@ -160,23 +160,76 @@ router.post('/', jsonParser, (req, res) => {
     });
 });
 
-//  post to a user's profile with updated questions information
-router.put('/:id/questions', jsonParser, jwtAuth, (req, res) => {  
+const scoreAnswer = (value, questionObject) => {
+  const correct = 2;
+  const incorrect = .5;
+  let score;
+  if (value === questionObject.us) {
+    score = questionObject.score * correct;       
+  } 
+  else {
+    score = Math.ceil(questionObject.score * incorrect);       
+  } 
+  return score;
+};
+
+const reposition = (array, questionCurrent, questionHead) => {
+  // initialize loop
+  let loopCurrent = array[questionHead];
+  let loopNextIndex = loopCurrent.nextIndex;
+  let loopPrevious;
+  // loop thru and find slot at end of matching values, i.e. if we have a 2, find last 2, then stop
+  for (let i = 0; i <= questionCurrent.score && i <= array.length; i++) {
+    loopPrevious = loopCurrent;
+    loopNextIndex = loopCurrent.nextIndex;
+    loopCurrent = array[loopNextIndex];
+  }
+  // once loop completes, insert current question in that slot
+  array[questionHead].nextIndex = loopNextIndex;
+  loopPrevious.nextIndex = questionHead;
+};
+
+// receive from client: userId (req.params), body {question, questionHead, answer}
+// get all question from user
+// score the question
+// update user's array of questions in db
+// send next question back to client
+router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {  
   console.log('updated questions information');
-  const updateUser = req.body;
-  console.log(req.body, 'request body');
-  User.findByIdAndUpdate(req.params.id,
-    { $set: {questions: updateUser.questions, questionHead: updateUser.questionHead } },
-    { new: true },
-    function (err, user) {
-      if (err) return res.status(500).json({message: 'user not found', error: err});
-      console.log(user, 'user');
-      const filteredUser = user.apiRepr();    
-      console.log(filteredUser, 'filterdUser');
-      res.status(201).json(filteredUser);
+  const userId = req.params.id;
+  const {question, questionHead, answer} = req.body;
+  let newQuestionHead;
+  let questions;
+  let nextQuestion;
+
+  console.log('userId', userId, 'request body',req.body);
+  return User.findById(userId)
+    .then(user=>{
+    // score questions
+      questions = user.questions;
+      questions[questionHead].score = scoreAnswer(answer, question);
+      console.log('questions[questionHead].score',questions[questionHead].score);
+      // update array
+      reposition(questions, question, questionHead);
+      newQuestionHead = questions[questionHead].nextIndex;
+      nextQuestion = {questionHead: newQuestionHead, question: questions[newQuestionHead]};
+      console.log('nextQuestion',nextQuestion);
+      return nextQuestion;
+    })
+    .then(()=>{
+      return User.findByIdAndUpdate(userId,
+        { $set: {questions: questions, questionHead: newQuestionHead} },
+        { new: true },
+        function (err, user) {
+          if (err) return res.status(500).json({message: 'user not found', error: err});
+          console.log(nextQuestion, 'nextQuestion');
+          return res.status(200).json(nextQuestion);          
+        });
     });
+
 });
 
+// NOT USING RIGHT NOW
 // update a user profile
 router.put('/blah/:id', jsonParser, jwtAuth, (req, res) => {
   console.log('update user profile');
@@ -220,6 +273,7 @@ router.put('/blah/:id', jsonParser, jwtAuth, (req, res) => {
     });
 });
 
+// NOT USING RIGHT NOW
 // update a user data (any data other than credentials)
 router.put('/:id/data', jwtAuth, jsonParser, (req, res) => {  
   console.log('update user data');
@@ -234,6 +288,7 @@ router.put('/:id/data', jwtAuth, jsonParser, (req, res) => {
     });
 });
 
+// NOT USING RIGHT NOW
 // get user by id
 router.get('/user/:userId', jwtAuth, (req, res) => {
   console.log('get user by id');
@@ -247,6 +302,7 @@ router.get('/user/:userId', jwtAuth, (req, res) => {
 });
 
 
+// NOT USING RIGHT NOW
 // delete user DANGER ZONE!!!! but good for initial testing
 router.delete('/:id', jwtAuth, (req, res) => {
   User

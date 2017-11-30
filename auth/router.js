@@ -25,7 +25,9 @@ router.post('/login', basicAuth, (req, res) => {
   const foundUser = req.user.apiRepr();
   // console.log('foundUser',foundUser);  
   foundUser.authToken = authToken;
-  console.log(' logging in');
+
+  foundUser.question = req.user.questions[req.user.questionHead];
+
   // console.log('foundUser with autho', foundUser);
   res.json(foundUser);
   
