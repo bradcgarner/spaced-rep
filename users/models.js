@@ -21,8 +21,7 @@ UserSchema.methods.apiRepr = function () {
     lastName: this.lastName,
     username: this.username,
     id: this._id,
-    questionHead: this.questionHead,
-    questions: this.questions
+    questionHead: this.questionHead
   };
 };
 
