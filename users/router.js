@@ -207,21 +207,23 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
     .then(user=>{
     // score questions
       questions = user.questions;
-      questions[questionHead].score = scoreAnswer(answer, questions[questionHead]);
+      questions[questionHead].score = scoreAnswer(answer, question);
+      console.log('questions[questionHead].score',questions[questionHead].score);
       // update array
-      reposition(questions, questions[questionHead], questionHead);
+      reposition(questions, question, questionHead);
       newQuestionHead = questions[questionHead].nextIndex;
       nextQuestion = {questionHead: newQuestionHead, question: questions[newQuestionHead]};
+      console.log('nextQuestion',nextQuestion);
+      return nextQuestion;
     })
-    .then(user=>{
+    .then(()=>{
       return User.findByIdAndUpdate(userId,
         { $set: {questions: questions, questionHead: newQuestionHead} },
         { new: true },
         function (err, user) {
           if (err) return res.status(500).json({message: 'user not found', error: err});
-          console.log('user updated',user );
           console.log(nextQuestion, 'nextQuestion');
-          res.status(201).json(nextQuestion);
+          return res.status(200).json(nextQuestion);          
         });
     });
 
