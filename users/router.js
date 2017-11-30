@@ -6,7 +6,7 @@ const express = require('express');
 const router = express.Router();
 
 const { User } = require('./models');
-const { Questions } = require('./questions');
+const { Questions } = require('../questions');
 
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();

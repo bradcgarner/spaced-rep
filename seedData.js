@@ -3,7 +3,7 @@
 const { app, dbConnect, runServer, closeServer } = require('./index');
 const { Questions } = require('./questions');
 
-const defaultScore = 5;
+const defaultScore = 2;
 
 const questions = [
   { brit: 'about-turn', us: 'U-turn', score: defaultScore  },
@@ -1180,7 +1180,7 @@ const populateQuestions = () => {
       for (let i = 0; i<batchSize ; i++ > 0){
         for ( let j = i; j<questions.length; j += batchSize){
           theQuestion = questions[j];
-          theQuestion.nextIndex = unsortedQuestions.length;
+          theQuestion.nextIndex = (unsortedQuestions.length + 1);
           unsortedQuestions.push(theQuestion);
         }
       }
