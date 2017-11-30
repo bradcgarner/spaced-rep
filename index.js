@@ -3,12 +3,8 @@
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-// mongoose only
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
-
-// knex
-const createKnex = require('knex');
 
 const {DATABASE_URL, PORT, CLIENT_ORIGIN} = require('./config');
 
@@ -35,7 +31,7 @@ app.use(
 
 // to prevent CORS issues, particularly with React and Heroku. Might be able to delete with Netlify. Look into security issues.
 app.use((req,res,next)=>{
-  res.header('Access-Control-Allow-Origin', '*');
+  // res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'POST, PUT');
   res.header('Access-Control-Request-Headers');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -56,9 +52,7 @@ app.use('*', (req, res) => {
 });
 
 let server; // declare `server` here, then runServer assigns a value.
-let knex = null;
 
-// MONGO !!!!!
 function dbConnect(url = DATABASE_URL) {
   return mongoose.connect(url, {useMongoClient: true})
     .catch(err => {
@@ -67,14 +61,6 @@ function dbConnect(url = DATABASE_URL) {
     });
 }
 
-// POSTGRES !!!!!
-// function dbConnect(url = DATABASE_URL) {
-//   knex = createKnex({
-//     client: 'pg',
-//     connection: url
-//   });
-// }
-
 function runServer(port=PORT) {
   return new Promise((resolve, reject) => {
     server = app.listen(port, () => { // always
@@ -82,7 +68,7 @@ function runServer(port=PORT) {
       resolve();
     })
       .on('error', err => {
-        mongoose.disconnect(); // only if mongoose
+        mongoose.disconnect();
         console.error('Express failed to start');
         reject(err);
       });
@@ -90,10 +76,9 @@ function runServer(port=PORT) {
 }
 
 // close the server, and return a promise. we'll handle the promise in integration tests.
-// MONGO !!!!!
 function closeServer() {
   return mongoose.disconnect()
-    .then(() => { // mongoose only. why no error catch here?
+    .then(() => { // why no error catch here?
       return new Promise((resolve, reject) => {
         console.log('Closing server');
         server.close(err => {
@@ -106,15 +91,10 @@ function closeServer() {
     });
 }
 
-// POSTGRES !!!!!
-// function closeServer() {
-//   return knex.destroy();
-// }
-
 // if called directly, vs 'required as module'
 if (require.main === module) { // i.e. if server.js is called directly (so indirect calls, such as testing, don't run this)
   dbConnect();
   runServer().catch(err => console.error(err));
 }
 
-module.exports = {app, runServer, closeServer};
+module.exports = {app, dbConnect, runServer, closeServer};

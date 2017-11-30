@@ -5,7 +5,8 @@
 const express = require('express');
 const router = express.Router();
 
-const { User, } = require('./models');
+const { User } = require('./models');
+const { Questions } = require('./questions');
 
 const bodyParser = require('body-parser');
 const jsonParser = bodyParser.json();
@@ -135,14 +136,17 @@ router.post('/', jsonParser, (req, res) => {
   }
 
   let { username, password, lastName, firstName } = userValid;
-
-  return confirmUniqueUsername(username)
-    .then(() => {
+  let questions;
+  let questionHead = 0;
+  
+  return Questions.find()
+    .then(fetchedQuestions=>{
+      questions = fetchedQuestions;
+      confirmUniqueUsername(username);
       return User.hashPassword(password);
     })
     .then(hash => {
-      // get 
-      return User.create({ username, password: hash, lastName, firstName });
+      return User.create({ username, password: hash, lastName, firstName, questions, questionHead });
     })
     .then(user => {
       return res.status(201).json(user.apiRepr());
@@ -214,20 +218,7 @@ router.put('/:id/data', jwtAuth, jsonParser, (req, res) => {
 router.get('/user/:userId', jwtAuth, (req, res) => {
   return User.findById(req.params.userId)
     .then(user => {
-      const filteredUser = user.apiRepr();
-      return res.status(200).json(filteredUser);
-    })
-    .catch(err => {
-      res.status(500).json({ code: 500, message: 'Internal server error' });
-    });
-});
-
-// get all users DANGER ZONE!!!! but good for initial testing
-router.get('/', (req, res) => {
-  return User.find()
-    .then(users => {
-      let usersJSON = users.map(user=>user.apiRepr());
-      return res.status(200).json(usersJSON);
+      return res.status(200).json(user.apiRepr());
     })
     .catch(err => {
       res.status(500).json({ code: 500, message: 'Internal server error' });
