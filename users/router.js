@@ -159,6 +159,22 @@ router.post('/', jsonParser, (req, res) => {
     });
 });
 
+//  post to a user's profile with updated questions information
+router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {  
+  const updateUser = req.body;
+  console.log(req.body, 'request body');
+  User.findByIdAndUpdate(req.params.id,
+    { $set: {questions: updateUser.questions, questionHead: updateUser.questionHead } },
+    { new: true },
+    function (err, user) {
+      if (err) return res.status(500).json({message: 'user not found', error: err});
+      console.log(user, 'user');
+      const filteredUser = user.apiRepr();    
+      console.log(filteredUser, 'filterdUser');
+      res.status(201).json(filteredUser);
+    });
+});
+
 // update a user profile
 router.put('/:id', jsonParser, jwtAuth, (req, res) => {
   const user = validateUserFields(req.body, 'existingUser');
