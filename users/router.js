@@ -126,6 +126,7 @@ function confirmUniqueUsername(username, type='new') {
 
 // create a new user
 router.post('/', jsonParser, (req, res) => {
+  console.log('create new user');
   const user = validateUserFields(req.body, 'new');
   let userValid;
   if (user !== 'ok') {
@@ -161,6 +162,7 @@ router.post('/', jsonParser, (req, res) => {
 
 //  post to a user's profile with updated questions information
 router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {  
+  console.log('updated questions information');
   const updateUser = req.body;
   console.log(req.body, 'request body');
   User.findByIdAndUpdate(req.params.id,
@@ -177,6 +179,7 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
 
 // update a user profile
 router.put('/:id', jsonParser, jwtAuth, (req, res) => {
+  console.log('update user profile');
   const user = validateUserFields(req.body, 'existingUser');
   let userValid;
   if (user !== 'ok') {
@@ -219,6 +222,7 @@ router.put('/:id', jsonParser, jwtAuth, (req, res) => {
 
 // update a user data (any data other than credentials)
 router.put('/:id/data', jwtAuth, jsonParser, (req, res) => {  
+  console.log('update user data');
   const updateUser = req.body;
   User.findByIdAndUpdate(req.params.id,
     { $set: {quizzes: updateUser.quizzes, recent: updateUser.recent } }, // recent: updateUser.recent
@@ -232,6 +236,7 @@ router.put('/:id/data', jwtAuth, jsonParser, (req, res) => {
 
 // get user by id
 router.get('/user/:userId', jwtAuth, (req, res) => {
+  console.log('get user by id');
   return User.findById(req.params.userId)
     .then(user => {
       return res.status(200).json(user.apiRepr());
