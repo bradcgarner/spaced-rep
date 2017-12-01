@@ -147,7 +147,7 @@ router.post('/', jsonParser, (req, res) => {
       return User.hashPassword(password);
     })
     .then(hash => {
-      return User.create({ username, password: hash, lastName, firstName, questions, questionHead });
+      return User.create({ username, password: hash, lastName, firstName, questions, questionHead, totalScore: 0 });
     })
     .then(user => {
       return res.status(201).json(user.apiRepr());
@@ -164,13 +164,16 @@ const scoreAnswer = (value, questionObject) => {
   const correct = 2;
   const incorrect = .5;
   let score;
+  let right;
   if (value === questionObject.us) {
-    score = questionObject.score * correct;       
+    score = questionObject.score * correct;
+    right = true;
   } 
   else {
-    score = Math.ceil(questionObject.score * incorrect);       
+    score = Math.ceil(questionObject.score * incorrect);  
+    right = false;     
   } 
-  return score;
+  return {score, right};
 };
 
 const reposition = (array, questionCurrent, questionHead) => {
@@ -202,13 +205,23 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
   let questions;
   let nextQuestion;
   let scoredQuestion;
+  let totalScore;
+  let score;
 
   console.log('userId', userId, 'request body',req.body);
   return User.findById(userId)
     .then(user=>{
     // score questions
       questions = user.questions;
-      questions[questionHead].score = scoreAnswer(answer, question);
+      const scoreObject = scoreAnswer(answer, question);
+      score = scoreObject.score;
+      questions[questionHead].score = score;
+      if (scoreObject.right) {
+        totalScore = questions[questionHead].score + user.totalScore;
+      }
+      else {
+        totalScore =  user.totalScore - questions[questionHead].score;
+      }
       scoredQuestion = questions[questionHead];
       console.log('questions[questionHead].score',questions);
       // update array
@@ -216,14 +229,15 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
       nextQuestion = {
         questionHeadNext: newQuestionHead, 
         questionNext: questions[newQuestionHead],
-        scoredQuestion
+        scoredQuestion,
+        totalScore
       };
       console.log('nextQuestion',nextQuestion);
       return nextQuestion;
     })
     .then(()=>{
       return User.findByIdAndUpdate(userId,
-        { $set: {questions: questions, questionHead: newQuestionHead} },
+        { $set: {questions: questions, questionHead: newQuestionHead, totalScore: totalScore} },
         { new: true },
         function (err, user) {
           if (err) return res.status(500).json({message: 'user not found', error: err});

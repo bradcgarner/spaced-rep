@@ -12,7 +12,8 @@ const UserSchema = mongoose.Schema({
   username: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   questionHead: {type: Number},
-  questions: {type: Array}
+  questions: {type: Array},
+  totalScore: {type: Number}
 });
 
 UserSchema.methods.apiRepr = function () {
@@ -21,7 +22,8 @@ UserSchema.methods.apiRepr = function () {
     lastName: this.lastName,
     username: this.username,
     id: this._id,
-    questionHead: this.questionHead
+    questionHead: this.questionHead,
+    totalScore: this.totalScore
   };
 };
 
