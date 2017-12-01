@@ -207,6 +207,7 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
   let scoredQuestion;
   let totalScore;
   let score;
+  let right;
 
   console.log('userId', userId, 'request body',req.body);
   return User.findById(userId)
@@ -215,6 +216,7 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
       questions = user.questions;
       const scoreObject = scoreAnswer(answer, question);
       score = scoreObject.score;
+      right = scoreObject.right;
       questions[questionHead].score = score;
       if (scoreObject.right) {
         totalScore = questions[questionHead].score + user.totalScore;
@@ -230,14 +232,15 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
         questionHeadNext: newQuestionHead, 
         questionNext: questions[newQuestionHead],
         scoredQuestion,
-        totalScore
+        totalScore,
+        right
       };
       console.log('nextQuestion',nextQuestion);
       return nextQuestion;
     })
     .then(()=>{
       return User.findByIdAndUpdate(userId,
-        { $set: {questions: questions, questionHead: newQuestionHead, totalScore: totalScore} },
+        { $set: {questions: questions, questionHead: newQuestionHead, totalScore: totalScore, right: right} },
         { new: true },
         function (err, user) {
           if (err) return res.status(500).json({message: 'user not found', error: err});
