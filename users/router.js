@@ -198,9 +198,10 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
   console.log('updated questions information');
   const userId = req.params.id;
   const {question, questionHead, answer} = req.body;
-  let newQuestionHead;
+  const newQuestionHead = question.nextIndex;
   let questions;
   let nextQuestion;
+  let scoredQuestion;
 
   console.log('userId', userId, 'request body',req.body);
   return User.findById(userId)
@@ -208,10 +209,10 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
     // score questions
       questions = user.questions;
       questions[questionHead].score = scoreAnswer(answer, question);
-      console.log('questions[questionHead].score',questions[questionHead].score);
+      scoredQuestion = questions[questionHead];
+      console.log('questions[questionHead].score',questions);
       // update array
-      reposition(questions, question, questionHead);
-      newQuestionHead = questions[questionHead].nextIndex;
+      reposition(questions, scoredQuestion, questionHead);
       nextQuestion = {questionHead: newQuestionHead, question: questions[newQuestionHead]};
       console.log('nextQuestion',nextQuestion);
       return nextQuestion;
