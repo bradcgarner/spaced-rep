@@ -213,7 +213,11 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
       console.log('questions[questionHead].score',questions);
       // update array
       reposition(questions, scoredQuestion, questionHead);
-      nextQuestion = {questionHead: newQuestionHead, question: questions[newQuestionHead]};
+      nextQuestion = {
+        questionHeadNext: newQuestionHead, 
+        questionNext: questions[newQuestionHead],
+        scoredQuestion
+      };
       console.log('nextQuestion',nextQuestion);
       return nextQuestion;
     })
