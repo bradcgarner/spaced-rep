@@ -21,14 +21,11 @@ const jwtAuth = passport.authenticate('jwt', { session: false });
 
 router.post('/login', basicAuth, (req, res) => {
   const authToken = createAuthToken(req.user.apiRepr());
-  // console.log('authToken',authToken);
   const foundUser = req.user.apiRepr();
-  // console.log('foundUser',foundUser);  
   foundUser.authToken = authToken;
 
   foundUser.question = req.user.questions[req.user.questionHead];
 
-  // console.log('foundUser with autho', foundUser);
   res.json(foundUser);
   
 });
