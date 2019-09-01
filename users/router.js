@@ -126,7 +126,6 @@ function confirmUniqueUsername(username, type='new') {
 
 // create a new user
 router.post('/', jsonParser, (req, res) => {
-  console.log('create new user');
   const user = validateUserFields(req.body, 'new');
   let userValid;
   if (user !== 'ok') {
@@ -147,7 +146,7 @@ router.post('/', jsonParser, (req, res) => {
       return User.hashPassword(password);
     })
     .then(hash => {
-      return User.create({ username, password: hash, lastName, firstName, questions, questionHead });
+      return User.create({ username, password: hash, lastName, firstName, questions, questionHead, totalScore: 0 });
     })
     .then(user => {
       return res.status(201).json(user.apiRepr());
@@ -164,13 +163,16 @@ const scoreAnswer = (value, questionObject) => {
   const correct = 2;
   const incorrect = .5;
   let score;
+  let right;
   if (value === questionObject.us) {
-    score = questionObject.score * correct;       
+    score = questionObject.score * correct;
+    right = true;
   } 
   else {
-    score = Math.ceil(questionObject.score * incorrect);       
+    score = Math.ceil(questionObject.score * incorrect);  
+    right = false;     
   } 
-  return score;
+  return {score, right};
 };
 
 const reposition = (array, questionCurrent, questionHead) => {
@@ -195,34 +197,48 @@ const reposition = (array, questionCurrent, questionHead) => {
 // update user's array of questions in db
 // send next question back to client
 router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {  
-  console.log('updated questions information');
   const userId = req.params.id;
   const {question, questionHead, answer} = req.body;
-  let newQuestionHead;
+  const newQuestionHead = question.nextIndex;
   let questions;
   let nextQuestion;
+  let scoredQuestion;
+  let totalScore;
+  let score;
+  let right;
 
-  console.log('userId', userId, 'request body',req.body);
   return User.findById(userId)
     .then(user=>{
     // score questions
       questions = user.questions;
-      questions[questionHead].score = scoreAnswer(answer, question);
-      console.log('questions[questionHead].score',questions[questionHead].score);
+      const scoreObject = scoreAnswer(answer, question);
+      score = scoreObject.score;
+      right = scoreObject.right;
+      questions[questionHead].score = score;
+      if (scoreObject.right) {
+        totalScore = questions[questionHead].score + user.totalScore;
+      }
+      else {
+        totalScore =  user.totalScore - questions[questionHead].score;
+      }
+      scoredQuestion = questions[questionHead];
       // update array
-      reposition(questions, question, questionHead);
-      newQuestionHead = questions[questionHead].nextIndex;
-      nextQuestion = {questionHead: newQuestionHead, question: questions[newQuestionHead]};
-      console.log('nextQuestion',nextQuestion);
+      reposition(questions, scoredQuestion, questionHead);
+      nextQuestion = {
+        questionHeadNext: newQuestionHead, 
+        questionNext: questions[newQuestionHead],
+        scoredQuestion,
+        totalScore,
+        right
+      };
       return nextQuestion;
     })
     .then(()=>{
       return User.findByIdAndUpdate(userId,
-        { $set: {questions: questions, questionHead: newQuestionHead} },
+        { $set: {questions: questions, questionHead: newQuestionHead, totalScore: totalScore, right: right} },
         { new: true },
         function (err, user) {
           if (err) return res.status(500).json({message: 'user not found', error: err});
-          console.log(nextQuestion, 'nextQuestion');
           return res.status(200).json(nextQuestion);          
         });
     });
@@ -231,8 +247,7 @@ router.put('/:id/questions', jwtAuth, jsonParser, (req, res) => {
 
 // NOT USING RIGHT NOW
 // update a user profile
-router.put('/:id', jsonParser, jwtAuth, (req, res) => {
-  console.log('update user profile');
+router.put('/blah/:id', jsonParser, jwtAuth, (req, res) => {
   const user = validateUserFields(req.body, 'existingUser');
   let userValid;
   if (user !== 'ok') {
@@ -276,7 +291,6 @@ router.put('/:id', jsonParser, jwtAuth, (req, res) => {
 // NOT USING RIGHT NOW
 // update a user data (any data other than credentials)
 router.put('/:id/data', jwtAuth, jsonParser, (req, res) => {  
-  console.log('update user data');
   const updateUser = req.body;
   User.findByIdAndUpdate(req.params.id,
     { $set: {quizzes: updateUser.quizzes, recent: updateUser.recent } }, // recent: updateUser.recent
@@ -291,7 +305,6 @@ router.put('/:id/data', jwtAuth, jsonParser, (req, res) => {
 // NOT USING RIGHT NOW
 // get user by id
 router.get('/user/:userId', jwtAuth, (req, res) => {
-  console.log('get user by id');
   return User.findById(req.params.userId)
     .then(user => {
       return res.status(200).json(user.apiRepr());

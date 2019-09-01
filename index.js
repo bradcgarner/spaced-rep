@@ -17,9 +17,7 @@ passport.use(basicStrategy);
 passport.use(jwtStrategy);
 
 app.use(
-  morgan(process.env.NODE_ENV === 'production' ? 'common' : 'dev', {
-    skip: (req, res) => process.env.NODE_ENV === 'test'
-  })
+  morgan('common')
 );
 
 app.use(
@@ -28,11 +26,13 @@ app.use(
   })
 );
 
+
 // option below is to serve up html from the server, vs client
 app.use(express.static('public'));
 // app.get('/', (req, res) => {
 //   res.sendFile(__dirname + '/views/index.html');
 // });
+
 
 app.use('/api/users', userRouter);
 app.use('/api/auth', authRouter);
